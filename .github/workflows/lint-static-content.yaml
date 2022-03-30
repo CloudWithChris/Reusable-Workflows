@@ -1,0 +1,25 @@
+on:
+  workflow_call:
+    inputs:
+      friendly_environment:
+        default: "Preview"
+        required: true
+        type: string
+    secrets:
+      githubtoken:
+        required: true
+jobs:
+  close_pr:
+    name: Lint (${{ inputs.friendly_environment }})
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: Lint Code Base
+        uses: github/super-linter/slim@v4
+        env:
+          VALIDATE_ALL_CODEBASE: false
+          FILTER_REGEX_INCLUDE: .*content/.*
+          DEFAULT_BRANCH: main
+          GITHUB_TOKEN: ${{ secrets.githubtoken }}
+          VALIDATE_JSCPD: false

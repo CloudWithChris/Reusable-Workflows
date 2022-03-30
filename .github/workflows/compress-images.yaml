@@ -1,0 +1,22 @@
+on:
+  workflow_call:
+    inputs:
+      friendly_environment:
+        default: "Preview"
+        required: true
+        type: string
+    secrets:
+      githubtoken:
+        required: true
+jobs:
+  close_pr:
+    name: Lint (${{ inputs.friendly_environment }})
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+      - name: Compress Images
+        id: calibre
+        uses: calibreapp/image-actions@main
+        with:
+          githubToken: ${{ secrets.githubtoken }}

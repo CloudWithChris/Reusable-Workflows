@@ -1,0 +1,53 @@
+on:
+  workflow_call:
+    inputs:
+      friendly_environment:
+        default: "Preview"
+        required: true
+        type: string
+      github_environment:
+        required: true
+        type: string
+      swa_name:
+        required: true
+        type: string
+    secrets:
+      AZURE_CLIENT_ID:
+        required: true
+      AZURE_TENANT_ID:
+        required: true
+      AZURE_SUBSCRIPTION_ID:
+        required: true
+env:
+  azure_cli_version: '2.34.1'
+jobs:
+  close_pr:
+    name: Close (${{ inputs.friendly_environment }})
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.github_environment }}
+    steps:
+      - name: 'Az CLI Login via OIDC'
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: "Mask SWA Token"
+        uses: azure/CLI@v1
+        with:
+          azcliversion: ${{ env.AZURE_CLI_VERSION }}
+          inlineScript: |
+            echo "::add-mask::$(az staticwebapp secrets list -n ${{ inputs.swa_name }} | jq -r '.properties.apiKey')"
+      - name: "Get SWA Token"
+        uses: azure/CLI@v1
+        with:
+          azcliversion: ${{ env.AZURE_CLI_VERSION }}
+          inlineScript: |
+            echo "SWA_TOKEN=$(az staticwebapp secrets list -n ${{ inputs.swa_name }} | jq -r '.properties.apiKey')" >> $GITHUB_ENV
+      - name: Close Pull Request
+        id: closepullrequest
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ env.SWA_TOKEN }}
+          action: 'close'

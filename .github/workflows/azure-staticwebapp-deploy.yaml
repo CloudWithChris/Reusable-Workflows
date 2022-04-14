@@ -66,3 +66,4 @@ jobs:
           action: 'upload'
           app_location: '${{ github.workspace }}/${{ env.artifact_name }}/public'
           skip_app_build: true
+          production_branch: "main"

@@ -20,6 +20,8 @@ jobs:
       id-token: 'write'
     runs-on: ubuntu-latest
     steps:
+      - name: 'Checkout code'
+        uses: actions/checkout@main
       - id: 'auth'
         name: 'Authenticate to Google Cloud'
         uses: 'google-github-actions/auth@v0'
